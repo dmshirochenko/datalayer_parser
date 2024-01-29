@@ -2,7 +2,7 @@ import os
 import json
 import time
 
-
+from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
