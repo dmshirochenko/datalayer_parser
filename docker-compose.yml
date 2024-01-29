@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - selenium-standalone-chrome-debug
+    environment:
+      - MODULE_NAME=src.main:app
+    networks:
+      - datalayer_network
+
+  selenium-standalone-chrome-debug:
+    container_name: selenium-standalone-chrome-debug
+    image: selenium/standalone-chrome-debug:latest
+    ports:
+      - "4444:4444"
+    networks:
+      - datalayer_network
+
+networks:
+  datalayer_network:

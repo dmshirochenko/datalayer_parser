@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: fastapi-app-docker
+    env: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    region: frankfurt
+    ports:
+      - 8000
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+
+  - type: pserv
+    name: selenium-standalone-chrome-debug
+    env: docker
+    dockerfilePath: ./Dockerfile.selenium
