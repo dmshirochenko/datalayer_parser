@@ -16,7 +16,7 @@ def fetch_data_layer(url, retries=3, timeout=30):
     while attempt < retries:
         try:
             driver = webdriver.Remote(
-                command_executor="http://selenium-standalone-chrome-debug:4444/wd/hub", options=options
+                command_executor="http://selenium-standalone-chrome-debug-3yw8:4444", options=options
             )
             driver.get(url)
 
