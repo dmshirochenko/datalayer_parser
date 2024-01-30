@@ -1,16 +1,11 @@
-import os
-import json
-import time
 import logging.config
-from functools import lru_cache
 from src.config.logger import LOGGING
+from src.config.config import settings, data_layer_cache
 
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
 
 from src.config.logger import LOGGING
 
@@ -21,11 +16,12 @@ logger = logging.getLogger(__name__)
 
 
 class DataLayerFetcher:
-    def __init__(self, selenium_server_url, timeout=30):
+    def __init__(self, selenium_server_url, timeout=settings.max_wait_time):
         options = webdriver.ChromeOptions()
         options.headless = True
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-extensions")
+        # options.add_argument("--no-sandbox")
+        # options.add_argument("--disable-dev-shm-usage")
 
         # Disable images and CSS
         prefs = {
@@ -40,14 +36,18 @@ class DataLayerFetcher:
         )
         self.timeout = timeout
 
-    @lru_cache(maxsize=16)
     def fetch_data_layer(self, url):
+        if url in data_layer_cache:
+            return data_layer_cache[url]
+
         try:
             self.driver.get(url)
             WebDriverWait(self.driver, self.timeout).until(
                 lambda driver: driver.execute_script("return document.readyState") == "complete"
             )
             data_layer = self.driver.execute_script("return window.dataLayer || []")
+            data_layer_cache[url] = data_layer
+            logger.info(f"DataLayer fetched for {url}")
             return data_layer
         except Exception as e:
             logger.error(f"Attempt failed: {e}")
