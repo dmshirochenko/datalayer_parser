@@ -42,7 +42,7 @@ def read_root():
 
 
 @app.post("/url")
-def create_url(url: URLBase, api_key: str = Depends(verify_api_key)):
+def fetch_data_layer_info(url: URLBase, api_key: str = Depends(verify_api_key)):
     if not validators.url(url.target_url):
         raise HTTPException(status_code=400, detail="Your provided URL is not valid")
 
