@@ -1,42 +1,66 @@
 import os
 import json
 import time
+import logging.config
+from functools import lru_cache
+from src.config.logger import LOGGING
 
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
+from src.config.logger import LOGGING
 
 load_dotenv()
 
-def fetch_data_layer(url, retries=3, timeout=30):
-    options = webdriver.ChromeOptions()
-    options.headless = True
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
+logging.config.dictConfig(LOGGING)
+logger = logging.getLogger(__name__)
 
-    selenium_server_url = os.getenv("SELENIUM_SERVER_URL")
 
-    attempt = 0
-    while attempt < retries:
+class DataLayerFetcher:
+    def __init__(self, selenium_server_url, timeout=30):
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+
+        # Disable images and CSS
+        prefs = {
+            "profile.managed_default_content_settings.images": 2,
+            "profile.managed_default_content_settings.stylesheet": 2,
+        }
+        options.add_experimental_option("prefs", prefs)
+
+        self.driver = webdriver.Remote(
+            command_executor=selenium_server_url,
+            options=options,
+        )
+        self.timeout = timeout
+
+    @lru_cache(maxsize=16)
+    def fetch_data_layer(self, url):
         try:
-            driver = webdriver.Remote(
-                command_executor=selenium_server_url, options=options
+            self.driver.get(url)
+            WebDriverWait(self.driver, self.timeout).until(
+                lambda driver: driver.execute_script("return document.readyState") == "complete"
             )
-            driver.get(url)
-
-            # Wait for the page to be fully loaded
-            WebDriverWait(driver, timeout).until(lambda d: d.execute_script("return document.readyState") == "complete")
-
-            data_layer = driver.execute_script("return JSON.stringify(window.dataLayer);")
-            return json.loads(data_layer)
-
+            data_layer = self.driver.execute_script("return window.dataLayer || []")
+            return data_layer
         except Exception as e:
-            print(f"Attempt {attempt + 1} failed: {e}")
-            time.sleep(2**attempt)  # Exponential backoff
-            attempt += 1
-        finally:
-            driver.quit()
+            logger.error(f"Attempt failed: {e}")
+            return None
 
-    raise Exception("Failed to fetch data layer after several retries")
+    def close(self):
+        try:
+            self.driver.quit()
+        except Exception as e:
+            logger.error(f"Failed to close the driver: {e}")
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
