@@ -46,9 +46,12 @@ def fetch_data_layer_info(url: URLBase, api_key: str = Depends(verify_api_key)):
     if not validators.url(url.target_url):
         raise HTTPException(status_code=400, detail="Your provided URL is not valid")
 
+    selenium_server_url = os.getenv("SELENIUM_SERVER_URL")
+
     try:
-        logger.info(f"Fetching data layer for {url.target_url}")
-        return fetcher.fetch_data_layer(url.target_url)
+        with DataLayerFetcher(selenium_server_url) as fetcher:
+            logger.info(f"Fetching data layer for {url.target_url}")
+            return fetcher.fetch_data_layer(url.target_url)
     except Exception as e:
         logger.error(f"Failed to fetch data layer for {url.target_url}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
