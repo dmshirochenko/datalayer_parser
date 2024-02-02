@@ -19,9 +19,6 @@ app = FastAPI()
 
 bearer_scheme = HTTPBearer()
 
-selenium_server_url = os.getenv("SELENIUM_SERVER_URL")
-fetcher = DataLayerFetcher(selenium_server_url)
-
 
 def verify_api_key(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
     if credentials.scheme != "Bearer":

@@ -9,7 +9,7 @@ services:
     volumes:
       - .:/app
     depends_on:
-      selenium-standalone-chrome-debug:
+      selenium-standalone-chromium:
         condition: service_healthy
     environment:
       - MODULE_NAME=src.main:app
@@ -21,9 +21,9 @@ services:
       timeout: 10s
       retries: 3
 
-  selenium-standalone-chrome-debug:
-    container_name: selenium-standalone-chrome-debug
-    image: selenium/standalone-chrome-debug:latest
+  selenium-standalone-chromium:
+    container_name: selenium-standalone-chromium
+    image: seleniarm/standalone-chromium:latest
     ports:
       - "4444:4444"
     networks:

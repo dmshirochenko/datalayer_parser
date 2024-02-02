@@ -1,13 +1,12 @@
 import logging.config
+from selenium import webdriver
+from selenium.webdriver.support.wait import WebDriverWait
+
+# Assuming these modules are correctly set up and provide necessary configurations
 from src.config.logger import LOGGING
 from src.config.config import settings, data_layer_cache
 
 from dotenv import load_dotenv
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-
-
-from src.config.logger import LOGGING
 
 load_dotenv()
 
@@ -19,16 +18,6 @@ class DataLayerFetcher:
     def __init__(self, selenium_server_url, timeout=settings.max_wait_time):
         options = webdriver.ChromeOptions()
         options.headless = True
-        options.add_argument("--disable-extensions")
-        # options.add_argument("--no-sandbox")
-        # options.add_argument("--disable-dev-shm-usage")
-
-        # Disable images and CSS
-        prefs = {
-            "profile.managed_default_content_settings.images": 2,
-            "profile.managed_default_content_settings.stylesheet": 2,
-        }
-        options.add_experimental_option("prefs", prefs)
 
         self.driver = webdriver.Remote(
             command_executor=selenium_server_url,
@@ -42,6 +31,7 @@ class DataLayerFetcher:
 
         try:
             self.driver.get(url)
+
             WebDriverWait(self.driver, self.timeout).until(
                 lambda driver: driver.execute_script("return document.readyState") == "complete"
             )
