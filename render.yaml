@@ -10,4 +10,5 @@ services:
   - type: web
     name: seleniarm/standalone-chromium_server
     env: docker
+    plan: free
     dockerfilePath: ./Dockerfile.selenium
