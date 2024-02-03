@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: fastapi-example
+    name: fastapi-example_api
     runtime: python
     plan: free
     autoDeploy: false
@@ -8,6 +8,6 @@ services:
     startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
 
   - type: web
-    name: seleniarm/standalone-chromium
+    name: seleniarm/standalone-chromium_server
     env: docker
     dockerfilePath: ./Dockerfile.selenium
