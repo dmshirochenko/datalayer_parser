@@ -8,6 +8,6 @@ services:
     startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
 
   - type: web
-    name: seleniarm/standalone-chromium:latest
+    name: seleniarm/standalone-chromium
     env: docker
     dockerfilePath: ./Dockerfile.selenium
