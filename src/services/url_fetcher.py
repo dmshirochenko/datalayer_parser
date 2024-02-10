@@ -4,7 +4,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 # Assuming these modules are correctly set up and provide necessary configurations
 from src.config.logger import LOGGING
-from src.config.config import settings, data_layer_cache
+from src.config.config import settings
 
 from dotenv import load_dotenv
 
@@ -26,9 +26,6 @@ class DataLayerFetcher:
         self.timeout = timeout
 
     def fetch_data_layer(self, url):
-        if url in data_layer_cache:
-            return data_layer_cache[url]
-
         try:
             self.driver.get(url)
 
@@ -36,7 +33,6 @@ class DataLayerFetcher:
                 lambda driver: driver.execute_script("return document.readyState") == "complete"
             )
             data_layer = self.driver.execute_script("return window.dataLayer || []")
-            data_layer_cache[url] = data_layer
             logger.info(f"DataLayer fetched for {url}")
             return data_layer
         except Exception as e:
