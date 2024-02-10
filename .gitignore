@@ -5,6 +5,7 @@ creds.ini
 *.pkl
 examples/
 postgres_instance/
+redis_data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

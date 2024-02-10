@@ -11,6 +11,8 @@ services:
     depends_on:
       selenium-standalone-chromium:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       - MODULE_NAME=src.main:app
     networks:
@@ -34,6 +36,27 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+
+  redis:
+    container_name: redis
+    image: "redis:latest"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    ports:
+      - "6380:6379"
+    volumes:
+      - ./redis_data:/data 
+    networks:
+      - datalayer_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+
+volumes:
+  redis_data:
 
 networks:
   datalayer_network:
