@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 
 # Assuming you've correctly set up BASE_DIR and ENV_FILE_PATH
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-env_file = ".env"
+env_file = "../.env"
 ENV_FILE_PATH = os.path.join(BASE_DIR, env_file)
 
 
@@ -14,8 +14,10 @@ class Settings(BaseSettings):
     max_wait_time: int = Field(15, env="MAX_WAIT_TIME")
     redis_host: str = Field("localhost", env="REDIS_HOST")
     redis_port: int = Field(6380, env="REDIS_PORT")
-    redis_password: str = Field(default="123test", env="REDIS_PASSWORD")
+    redis_password: str = Field(..., env="REDIS_PASSWORD")
     redis_db: int = Field(0, env="REDIS_DB")
+    selenium_server_url: str = Field(..., env="SELENIUM_SERVER_URL")
+    bearer_token: str = Field(..., env="BEARER_TOKEN")
 
     class Config:
         env_file = ENV_FILE_PATH

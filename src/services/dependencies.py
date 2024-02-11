@@ -11,7 +11,3 @@ def verify_api_key(credentials: HTTPAuthorizationCredentials = Depends(bearer_sc
     if credentials.credentials != os.getenv("BEARER_TOKEN"):
         raise HTTPException(status_code=403, detail="Invalid token")
     return credentials
-
-
-def raise_bad_request(message):
-    raise HTTPException(status_code=400, detail=message)
