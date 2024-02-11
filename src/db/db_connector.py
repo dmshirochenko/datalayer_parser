@@ -1,8 +1,13 @@
 import json
 import redis
+import logging.config
 from typing import Any, Dict
 
+from src.config.logger import LOGGING
 from src.config.config import settings
+
+logging.config.dictConfig(LOGGING)
+logger = logging.getLogger(__name__)
 
 
 class RedisJSONClient:
@@ -16,23 +21,17 @@ class RedisJSONClient:
         )
 
     def set_json(self, key: str, value: Dict[str, Any], ex=None) -> bool:
-        """
-        Serialize a dictionary to a JSON string and store it in Redis.
-        """
         try:
             json_value = json.dumps(value)
             return self.redis_client.set(key, json_value, ex=ex)
         except redis.RedisError as e:
-            print(f"Redis error: {e}")
+            logger.error(f"Redis error: {e}")
             return False
         except TypeError as e:
-            print(f"Serialization error: {e}")
+            logger.error(f"Serialization error: {e}")
             return False
 
     def get_json(self, key: str) -> Dict[str, Any]:
-        """
-        Retrieve a JSON string from Redis and deserialize it to a dictionary.
-        """
         try:
             value = self.redis_client.get(key)
             if value:
@@ -40,10 +39,10 @@ class RedisJSONClient:
             else:
                 return {}  # Key does not exist
         except redis.RedisError as e:
-            print(f"Redis error: {e}")
+            logger.error(f"Redis error: {e}")
             return {}
         except json.JSONDecodeError as e:
-            print(f"Deserialization error: {e}")
+            logger.error(f"Deserialization error: {e}")
             return {}
 
 

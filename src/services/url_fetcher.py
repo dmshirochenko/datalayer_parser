@@ -2,7 +2,6 @@ import logging.config
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 
-# Assuming these modules are correctly set up and provide necessary configurations
 from src.config.logger import LOGGING
 from src.config.config import settings
 
