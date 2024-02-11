@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from src.models.schemas import URLBase, DataLayerPayload
 from src.services.url_fetcher import DataLayerFetcher
 from src.services.dependencies import verify_api_key, raise_bad_request
-from src.services.datalayer_handler import filter_datalayer
+from src.services.datalayer_handler import filter_datalayer, data_layer_dct_initializer
 from src.db.db_connector import RedisJSONClient, get_redis_connection
 
 logger = logging.getLogger(__name__)
@@ -27,12 +27,18 @@ def store_datalayer_info(
     api_key: str = Depends(verify_api_key),
 ):
     try:
-        filtered_data_layer = filter_datalayer(payload.dataLayerPayload.dataLayer)
-        if filtered_data_layer:
-            print(filtered_data_layer)
-            db.set_json("partner_id_1", {"dataLayer": filtered_data_layer})
-            retrieved_user_info = db.get_json("partner_id_1")
-            print(retrieved_user_info)
+        filtered_recieved_datalayer = filter_datalayer(payload.dataLayerPayload.dataLayer)
+        if filtered_recieved_datalayer:
+            datalayer_info = db.get_json(payload.dataLayerPayload.partnerId)
+            print(datalayer_info)
+            if datalayer_info:
+                datalayer_info[payload.dataLayerPayload.selectedPage] = filtered_recieved_datalayer
+            else:
+                datalayer_info = data_layer_dct_initializer()
+                datalayer_info[payload.dataLayerPayload.selectedPage] = filtered_recieved_datalayer
+
+            db.set_json(payload.dataLayerPayload.partnerId, datalayer_info)
+
         else:
             raise_bad_request("Your provided datalayer is not empty or not in the correct format")
     except Exception as e:
