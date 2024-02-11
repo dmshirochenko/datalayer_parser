@@ -42,4 +42,5 @@ unwanted_event_names = [
     "gtm.formSubmit",  # Form submission events.
     "gtm.linkClick",  # Link click events.
     "gtm.message",  # PostMessage or similar message events.
+    "gtm.scrollDepth",  # Scroll depth events.
 ]
