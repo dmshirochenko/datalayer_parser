@@ -1,7 +1,7 @@
 import logging.config
 
 import validators
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import Header, APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 
 from src.config.logger import LOGGING
@@ -25,14 +25,17 @@ def read_root():
 
 @router.get("/v1/datalayers/{partner_id}")
 def get_datalayer_info(
-    partner_id: str, db: RedisJSONClient = Depends(get_redis_connection), api_key: str = Depends(verify_api_key)
+    partner_id: str,
+    db: RedisJSONClient = Depends(get_redis_connection),
+    api_key: str = Depends(verify_api_key),
+    ngrok_skip_browser_warning: str = Header(..., description="Must be set to 'true' to skip ngrok's browser warning."),
 ) -> JSONResponse:
     try:
         datalayer_info = db.get_json(partner_id)
         if not datalayer_info:
             raise HTTPException(status_code=404, detail="Data layer information not found")
         logger.info(f"Datalayer information fetched successfully for {partner_id}")
-        return JSONResponse(status_code=200, content=datalayer_info, headers={'ngrok-skip-browser-warning': 'true'})
+        return JSONResponse(status_code=200, content=datalayer_info, headers={"ngrok-skip-browser-warning": "true"})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
