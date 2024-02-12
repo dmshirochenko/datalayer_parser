@@ -1,12 +1,12 @@
 import logging.config
 
 import validators
-from fastapi import Header, APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 
 from src.config.logger import LOGGING
 from src.config.config import settings
-from src.models.schemas import URLBase, DataLayerPayload
+from src.models.schemas import URLBase, DataLayerPayload, PartnerIDRequest
 from src.services.url_fetcher import DataLayerFetcher
 from src.services.dependencies import verify_api_key
 from src.services.datalayer_handler import filter_datalayer, data_layer_dct_initializer
@@ -23,24 +23,23 @@ def read_root():
     return JSONResponse(status_code=200, content={"message": "Welcome to the DataLayer Fetcher API"})
 
 
-@router.get("/v1/datalayers/{partner_id}")
-def get_datalayer_info(
-    partner_id: str,
+@router.post("/v1/partners/datalayers/all")
+def get_partner_datalayers_info(
+    request_data: PartnerIDRequest,
     db: RedisJSONClient = Depends(get_redis_connection),
     api_key: str = Depends(verify_api_key),
-    ngrok_skip_browser_warning: str = Header(..., description="Must be set to 'true' to skip ngrok's browser warning."),
 ) -> JSONResponse:
     try:
-        datalayer_info = db.get_json(partner_id)
+        datalayer_info = db.get_json(request_data.partner_id)
         if not datalayer_info:
             raise HTTPException(status_code=404, detail="Data layer information not found")
-        logger.info(f"Datalayer information fetched successfully for {partner_id}")
+        logger.info(f"Datalayer information fetched successfully for {request_data.partner_id}")
         return JSONResponse(status_code=200, content=datalayer_info, headers={"ngrok-skip-browser-warning": "true"})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
 
-@router.post("/v1/datalayers")
+@router.post("/v1/partners/datalayers")
 def store_datalayer_info(
     payload: DataLayerPayload,
     db: RedisJSONClient = Depends(get_redis_connection),
@@ -68,7 +67,7 @@ def store_datalayer_info(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/v1/url")
+@router.post("/v1/urls")
 def fetch_data_layer_info(url: URLBase, api_key: str = Depends(verify_api_key)):
     if not validators.url(url.target_url):
         raise HTTPException(status_code=400, detail="Invalid URL provided")
