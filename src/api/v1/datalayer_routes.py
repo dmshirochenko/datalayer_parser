@@ -32,7 +32,7 @@ def get_datalayer_info(
         if not datalayer_info:
             raise HTTPException(status_code=404, detail="Data layer information not found")
         logger.info(f"Datalayer information fetched successfully for {partner_id}")
-        return JSONResponse(status_code=200, content=datalayer_info)
+        return JSONResponse(status_code=200, content=datalayer_info, headers={'ngrok-skip-browser-warning': 'true'})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
